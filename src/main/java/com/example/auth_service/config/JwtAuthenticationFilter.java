@@ -30,10 +30,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Skip JWT filter for public endpoints
         String path = request.getRequestURI();
-        if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        if (path.equals("/api/auth/register") || path.equals("/api/auth/login")) {
+    filterChain.doFilter(request, response);
+    return;
+}
 
         final String authHeader = request.getHeader("Authorization");
         final String prefix = "Bearer ";
