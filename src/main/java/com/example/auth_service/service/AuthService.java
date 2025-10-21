@@ -8,4 +8,5 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
     boolean validateToken(String token);
     String extractUsername(String token);
+    String getCurrentUserEmail();
 }

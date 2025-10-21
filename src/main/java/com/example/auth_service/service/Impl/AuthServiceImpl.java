@@ -11,6 +11,8 @@ import com.example.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -94,5 +96,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String extractUsername(String token) {
         return jwtService.extractUsername(token);
+    }
+
+    // ✅ GET CURRENT USER EMAIL FROM SECURITY CONTEXT
+    @Override
+    public String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return userDetails.getUsername(); // In our case, username is the email
+        }
+        throw new RuntimeException("No authenticated user found");
     }
 }

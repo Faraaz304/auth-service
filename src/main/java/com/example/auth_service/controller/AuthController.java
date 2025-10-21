@@ -26,8 +26,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage()
-            ));
+                    "error", e.getMessage()));
         }
     }
 
@@ -39,52 +38,43 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage()
-            ));
+                    "error", e.getMessage()));
         }
     }
 
     // ✅ VALIDATE TOKEN — check if JWT is valid (for other microservices)
     @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "valid", false,
-                        "error", "Invalid token format"
-                ));
-            }
-
-            String token = authHeader.substring(7);
-            boolean isValid = authService.validateToken(token);
-
-            return ResponseEntity.ok(Map.of("valid", isValid));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "valid", false,
-                    "error", e.getMessage()
-            ));
-        }
+    public ResponseEntity<?> validateToken() {
+        // If this endpoint is reached, the JWT filter already validated the token
+        // Spring Security context will contain the authenticated user
+        return ResponseEntity.ok(Map.of("valid", true));
     }
 
-    // ✅ ME — get user info from token (optional but useful)
+    // ✅ ME — get user info from authenticated context
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getCurrentUser() {
         try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "error", "Invalid token format"
-                ));
-            }
-
-            String token = authHeader.substring(7);
-            String email = authService.extractUsername(token);
-
+            // Get the authenticated user from Spring Security context
+            String email = authService.getCurrentUserEmail();
             return ResponseEntity.ok(Map.of("email", email));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage()
-            ));
+                    "error", e.getMessage()));
+        }
+    }
+
+    // ✅ EXAMPLE PROTECTED ENDPOINT — demonstrates how other endpoints should work
+    @GetMapping("/protected")
+    public ResponseEntity<?> protectedEndpoint() {
+        try {
+            String email = authService.getCurrentUserEmail();
+            return ResponseEntity.ok(Map.of(
+                    "message", "This is a protected endpoint",
+                    "authenticatedUser", email,
+                    "timestamp", System.currentTimeMillis()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()));
         }
     }
 }
