@@ -48,9 +48,11 @@ public class AuthServiceImpl implements AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
@@ -72,9 +74,11 @@ public class AuthServiceImpl implements AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
@@ -91,6 +95,29 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
     }
+
+    @Override
+    public AuthResponse refreshToken(String refreshToken) {
+        if (!jwtService.validateRefreshToken(refreshToken)) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        String userEmail = jwtService.extractUsername(refreshToken);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String newAccessToken = jwtService.generateToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return AuthResponse.builder()
+                .token(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
+    }
+
 
     // ✅ EXTRACT USERNAME/EMAIL FROM TOKEN
     @Override

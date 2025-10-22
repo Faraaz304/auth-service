@@ -63,6 +63,18 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
+    String refreshToken = request.get("refreshToken");
+    try {
+        AuthResponse response = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(response);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+    }
+}
+
+
     // ✅ EXAMPLE PROTECTED ENDPOINT — demonstrates how other endpoints should work
     @GetMapping("/protected")
     public ResponseEntity<?> protectedEndpoint() {

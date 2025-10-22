@@ -9,4 +9,5 @@ public interface AuthService {
     boolean validateToken(String token);
     String extractUsername(String token);
     String getCurrentUserEmail();
+    AuthResponse refreshToken(String refreshToken);
 }
